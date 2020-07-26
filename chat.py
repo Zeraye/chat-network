@@ -2,6 +2,9 @@ import pygame_textinput
 import pygame
 import time
 from network import Network
+from database import Database
+from menu import main_menu
+from menu import user
 
 pygame.init()
 
@@ -27,13 +30,9 @@ def draw_textinput(win):
     win.blit(textinput.get_surface(), (10, HEIGHT - 30))
 
 
-def write_to_conv(text, user, user2, conv):
-    if len(text) != 7:
+def write_to_conv(text, user):
+    if len(text) != len(user.get_name()) + 2:
         user.conv_add(text)
-        user2.conv_add(text)
-    if len(conv) > 43:
-        user.remove_word()
-        user2.remove_word()
 
 
 def draw_conv(win, conv):
@@ -58,28 +57,22 @@ def draw(win, words, conv):
 
 
 def main(win):
-    conv = []
-    n = Network()
-    user = n.get_p()
+    main_menu(win)
+    conv = Database().get()
+    draw(win, user.get_words(), conv)
     timer = time.time()
-    user2 = n.send(user)
     delay = 1
     run = True
     clock = pygame.time.Clock()
     while run:
         clock.tick(60)
-        length = len(user2.get_conv())
-        user2 = n.send(user)
-        print('USER CONV')
-        print(user.get_conv())
-        print('USER2 CONV')
-        print(user2.get_conv())
+        conv = Database().get()
+        if len(Database().get()) > 43:
+            Database().remove()
+            conv = Database().get()
         if len(user.get_conv()) != 0:
-            conv.append(user.get_conv()[-1])
+            Database().add(user.get_conv()[-1])
             user.set_conv([])
-        if len(user2.get_conv()) != 0:
-            conv.append(user2.get_conv()[-1])
-            user2.set_conv([])
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
@@ -89,7 +82,8 @@ def main(win):
                 if not event.key == pygame.K_BACKSPACE:
                     if not event.key == pygame.K_LSHIFT:
                         if not event.key == pygame.K_LCTRL:
-                            user.add_word()
+                            if not event.key == pygame.K_RETURN:
+                                user.add_word()
                 if event.key == pygame.K_BACKSPACE and user.get_words() > 0:
                     user.remove_word()
                 if user.get_words() > 30:
@@ -102,7 +96,7 @@ def main(win):
 
                 if event.key == pygame.K_RETURN and time.time() - timer > delay:
                     user.reset_words()
-                    write_to_conv(user.get_name() + ': ' + textinput.get_text(), user, user2, conv)
+                    write_to_conv(user.get_name() + ': ' + textinput.get_text(), user)
                     print(textinput.get_text())
                     textinput.clear_text()
                     timer = time.time()
