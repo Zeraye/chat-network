@@ -2,10 +2,17 @@ import socket
 from _thread import *
 from user import User
 import pickle
+import json
 
-server = '192.168.8.116'
-# server = socket.gethostname()
-port = 9090
+with open('users.json', 'r+') as file:
+    file.truncate()
+    file.write('{}')
+
+with open('database.txt', 'r+') as file:
+    file.truncate()
+
+server = ''
+port = 7878
 
 s = socket.socket(socket.AF_INET,
                   socket.SOCK_STREAM)
@@ -15,11 +22,11 @@ try:
 except socket.error as e:
     str(e)
 
-s.listen(2)
+
+s.listen()
 print('Waiting for connection, Server Started')
 
-conv = []
-users = [User('Jakub', 'ADMIN', conv), User('Adam', 'USER', conv)]
+users = []
 
 
 def threaded_client(conn, user):
@@ -49,10 +56,24 @@ def threaded_client(conn, user):
     conn.close()
 
 
+def write_json(data, filename='users.json'):
+    with open(filename, 'r+') as file:
+        json.dump(data, file, indent=4)
+
+
 current_user = 0
 while True:
     conn, addr = s.accept()
     print('Connected to:', addr)
+
+    with open('users.json', 'r+') as file:
+        print('im here')
+        new_data = {str(current_user): ["", str(current_user), 'USER', []]}
+        data = json.loads(file.read())
+        data.update(new_data)
+        write_json(data)
+        print('appending...')
+        users.append(User("", str(current_user), "", []))
 
     start_new_thread(threaded_client, (conn, current_user))
     current_user += 1
