@@ -5,6 +5,9 @@ import pickle
 class Network:
     def __init__(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # if you want it local
+        # self.server = socket.gethostbyname(socket.gethostname())
+        # if you want set up your own ip
         self.server = ''
         self.port = 7878
         self.addr = (self.server, self.port)
@@ -26,5 +29,3 @@ class Network:
             return pickle.loads(self.client.recv(2048*4))
         except socket.error as e:
             print(e)
-
-

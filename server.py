@@ -11,6 +11,9 @@ with open('users.json', 'r+') as file:
 with open('database.txt', 'r+') as file:
     file.truncate()
 
+# if you want it local
+# server = socket.gethostbyname(socket.gethostname())
+# if you want set up your own ip
 server = ''
 port = 7878
 
